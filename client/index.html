@@ -1,3 +1,4 @@
+<!--***************************************************************************
 MIT License
 
 Copyright (c) 2021 Ludovic Le Frioux
@@ -19,3 +20,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*****************************************************************************-->
+
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>P2P Messaging</title>
+      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+      <link href="style.css" rel="stylesheet" type="text/css"/>
+   <head/>
+   <body>
+      <h1>P2P Messaging</h1>
+      <div id="loginView">
+         <input type="email" placeholder="Enter a login" id="loginInput">
+         <button id="loginButton" onclick="onLoginClick();">Sign in</button>
+      </div>
+      <div id="messageView">
+         <label for="logoutButton" id="logoutLabel"></label>
+         <button id="logoutButton" onclick="onLogoutClick();">Sign out</button>
+      </div>
+   </body>
+   <script type="text/javascript" src="client.js"></script>
+</html> 

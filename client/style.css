@@ -1,3 +1,4 @@
+/*******************************************************************************
 MIT License
 
 Copyright (c) 2021 Ludovic Le Frioux
@@ -19,3 +20,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*******************************************************************************/
+
+body {
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
+    background-color: #e8e8e8; 
+}
