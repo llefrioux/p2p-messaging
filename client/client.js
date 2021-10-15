@@ -29,6 +29,9 @@ SOFTWARE.
 // Web socket connection to service
 var socket = new WebSocket("ws://localhost:7777");
 
+// WebRTC socket connection to peer
+var peer;
+
 // Client login
 var clientLogin;
 
@@ -39,6 +42,9 @@ var clientLogin;
 var loginView = document.getElementById("loginView");
 var loginInput = document.getElementById("loginInput");
 var logoutLabel = document.getElementById("logoutLabel");
+var messageView = document.getElementById("messageView");
+var messageInput = document.getElementById("messageInput");
+var discussionInput = document.getElementById("discussionInput");
 
 /*******************************************************************************
                            SERVICE COMMUNICATION
@@ -70,6 +76,7 @@ function onLoginReceived(command) {
       alert("Sorry this login is already used...");
       return;
    }
+   setupLocalPeerToPeer();
    switchToMessageView(clientLogin);
 }
 
@@ -81,6 +88,44 @@ function onErrorReceived(command) {
 // Send a message to the service
 function sendToService(message) {
    socket.send(JSON.stringify(message)); 
+}
+
+/*******************************************************************************
+                         PEER-TO-PEER COMMUNICATION
+ ******************************************************************************/
+
+// Setup a local peer-to-peer connection
+function setupLocalPeerToPeer() {
+   var peer1 = new RTCPeerConnection(null);
+   peer1.onicecandidate = function(event) {
+      peer2.addIceCandidate(event.candidate);
+   };
+
+   peer = peer1.createDataChannel("messaging-channel");
+
+   var peer2 = new RTCPeerConnection(null);
+   peer2.onicecandidate = function (event) {
+      peer1.addIceCandidate(event.candidate);
+   };
+   peer2.ondatachannel = function (event) {
+      event.channel.onmessage = function (event) {
+         discussionInput.value = event.data;
+      };
+   };
+
+   peer1.createOffer().then((offer) => {
+      peer1.setLocalDescription(offer);
+      peer2.setRemoteDescription(offer);
+      peer2.createAnswer().then((answer) => {
+         peer2.setLocalDescription(answer);
+         peer1.setRemoteDescription(answer);
+      });
+   });
+}
+
+// Send a message to the peer
+function sendToPeer(message) {
+   peer.send(message);
 }
 
 /*******************************************************************************
@@ -96,6 +141,8 @@ function switchToLoginView() {
    messageView.style.display = "none";
    loginInput.value = "";
    logoutLabel.textContent = "";
+   messageInput.value = "";
+   discussionInput.value = "";
 }
 
 // Switch to message view mode
@@ -125,4 +172,9 @@ function onLogoutClick() {
       type: "logout"
    });
    switchToLoginView();
+}
+
+// Handler for send click
+function onSendClick() {
+   sendToPeer(messageInput.value);
 }
