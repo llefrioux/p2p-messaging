@@ -178,10 +178,20 @@ function setupPeerToPeer() {
    peer = peerConnection.createDataChannel("messaging-channel");
    peer.onopen = function (event) {
       connectToButton.innerText = "Disconnect from";
+      otherInput.value = otherLogin;
+   }
+   peer.onclose = function (event) {
+      otherLogin = "";
+      connectToButton.innerText = "Connect to";
+      logoutLabel.textContent = `Welcome ${clientLogin}!`;
+      otherInput.value = "";
+      discussionInput.value = "";
+      messageInput.value = "";
+      setupPeerToPeer();
    }
 }
 
-// close peer-to-peer connection
+// Close peer-to-peer connection
 function closePeerToPeer() {
    peerConnection.close();
    delete peerConnection;
@@ -271,15 +281,15 @@ function onLoginClick() {
 
 // Handler for logout click
 function onLogoutClick() {
+   otherLogin = "";
+   connectToButton.innerText = "Connect to";
+   closePeerToPeer();
+   switchToLoginView();
    sendToService({
       type: "logout",
       login: clientLogin
    });
    clientLogin = "";
-   otherLogin = "";
-   connectToButton.innerText = "Connect to";
-   closePeerToPeer();
-   switchToLoginView();
 }
 
 // Handler for connect to
