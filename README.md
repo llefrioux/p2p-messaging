@@ -13,13 +13,17 @@ One can launch the client by opening the index.html page in a browser.
 
 Each client establishes a connection to the service using websocket.
 
-While openning the application a client can sign in with a login.
+While openning the application a user can sign in with a login.
 
-While logged the client can logout and get back to previous sign in view.
+When logged the user can logout and get back to previous sign in view.
 
-Also a local peer-to-peer connection is established using webRTC. A client can
-write a message and send it through this connection by using the send button.
-When the message is received it is displayed in the second textarea.
+User can connect to another by typing the targeted user login and clicking on
+connect to. This will established a peer-to-peer connection using webRTC
+between the two users. This connection is settled via the service.
+
+The user can then write a message and send it directly to the other through
+this connection by using the send button. When the message is received from the
+other user it is displayed in the second textarea.
 
 ## Service
 
@@ -29,6 +33,9 @@ client connections.
 A client can try to sign in by proposing a login. The service accepts only if
 the login is not already used. A client can also logout. A map from login to
 client connection is maintained accordingly.
+
+The service is also used as intermediate for establishing peer-to-peer
+connection between clients.
 
 ### Get started
 
@@ -44,12 +51,11 @@ Then, you can run the service:
 ```bash
 node service.js
 ```
-
-Note: Service is configured to run by default on port 7777, but one can change
+Note: Service is configured to run by default on port 7777, but you can change
 it by setting the environment variable `PORT`. If you do so, do not forget to
 change port also in the client code.
 
-### Received messages
+### Sign in and sign out
 
 Service accepts client connections and manages `login` and `logout` messages.
 
@@ -60,14 +66,13 @@ Service accepts client connections and manages `login` and `logout` messages.
    "login": string
 }
 ```
+
 `logout` messages are formed as follows:
 ```
 {
    "type": "logout",
 }
 ```
-
-### Sent messages
 
 Service responds to clients with `login` and `error` messages.
 
@@ -86,3 +91,39 @@ Service responds to clients with `login` and `error` messages.
    "message": string
 }
 ``` 
+
+### Establishing peer-to-peer communication
+
+Service is used as intermediate to established peer-to-peer connection between
+users. It acts as a signaling service and transfers `offer, `answer` and
+`ice-candidate` messages from a user to another.
+
+`offer` messages are formed as follows:
+```
+{
+   "type": "offer",
+   "offer": offer_object,
+   "from": loginFrom,
+   "to": loginTo
+}
+```
+
+`answer` messages are formed as follows:
+```
+{
+   "type": "answer",
+   "answer": answer_object,
+   "from": loginFrom,
+   "to": loginTo
+}
+```
+
+`ice-candidate` messages are formed as follows:
+```
+{
+   "type": "ice-candidate",
+   "ice-candidate": candidate_object,
+   "from": loginFrom,
+   "to": loginTo
+}
+```

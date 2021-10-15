@@ -29,11 +29,17 @@ SOFTWARE.
 // Web socket connection to service
 var socket = new WebSocket("ws://localhost:7777");
 
-// WebRTC socket connection to peer
+// WebRTC connection to peer
+var peerConnection;
+
+// WebRTC data channel to peer
 var peer;
 
 // Client login
 var clientLogin;
+
+// Receiver login
+var receiverLogin;
 
 /*******************************************************************************
                            UI GLOBAL VARIABLES
@@ -44,6 +50,7 @@ var loginInput = document.getElementById("loginInput");
 var logoutLabel = document.getElementById("logoutLabel");
 var messageView = document.getElementById("messageView");
 var messageInput = document.getElementById("messageInput");
+var receiverInput = document.getElementById("receiverInput");
 var discussionInput = document.getElementById("discussionInput");
 
 /*******************************************************************************
@@ -61,6 +68,18 @@ socket.onmessage = function (message) {
          onLoginReceived(command);
          break;
 
+      case "ice-candidate":
+         onIceCandidateReceived(command);
+         break;
+
+      case "offer":
+         onOfferReceived(command);
+         break;
+
+      case "answer":
+         onAnswerReceived(command);
+         break;
+
       case "error":
          onErrorReceived(command);
          break;
@@ -76,13 +95,42 @@ function onLoginReceived(command) {
       alert("Sorry this login is already used...");
       return;
    }
-   setupLocalPeerToPeer();
    switchToMessageView(clientLogin);
+}
+
+// Handle ice-candidate message
+function onIceCandidateReceived(command) {
+   peerConnection.addIceCandidate(command.iceCandidate);
+}
+
+// Handle offer message
+function onOfferReceived(command) {
+   peerConnection.setRemoteDescription(command.offer);
+   peerConnection.createAnswer().then((answer) => {
+      peerConnection.setLocalDescription(answer);
+      receiverLogin = command.from;
+      sendToService({
+         type: "answer",
+         answer: answer,
+         from: clientLogin,
+         to: receiverLogin
+      });
+   }).catch((error) => {
+      console.error("Fail to create answer: " + error);
+   });
+}
+
+// Handle answer message
+function onAnswerReceived(command) {
+   peerConnection.setRemoteDescription(command.answer)
+      .catch((error) => {
+         console.error("Fail to handle answer: " + error);
+      });
 }
 
 // Handle error message
 function onErrorReceived(command) {
-   console.err("Service replies with error: " + command.message);
+   console.error("Service replies with error: " + command.message);
 }
 
 // Send a message to the service
@@ -95,32 +143,26 @@ function sendToService(message) {
  ******************************************************************************/
 
 // Setup a local peer-to-peer connection
-function setupLocalPeerToPeer() {
-   var peer1 = new RTCPeerConnection(null);
-   peer1.onicecandidate = function(event) {
-      peer2.addIceCandidate(event.candidate);
+function setupPeerToPeer() {
+   var iceServer = {
+      urls: "stun:stun.l.google.com:19302"
    };
-
-   peer = peer1.createDataChannel("messaging-channel");
-
-   var peer2 = new RTCPeerConnection(null);
-   peer2.onicecandidate = function (event) {
-      peer1.addIceCandidate(event.candidate);
+   peerConnection = new RTCPeerConnection(iceServer);
+   peerConnection.onicecandidate = function (event) {
+      sendToService({
+         type: "ice-candidate",
+         iceCandidate: event.candidate,
+         from: clientLogin,
+         to: receiverLogin
+      });
    };
-   peer2.ondatachannel = function (event) {
+   peerConnection.ondatachannel = function (event) {
       event.channel.onmessage = function (event) {
          discussionInput.value = event.data;
       };
    };
 
-   peer1.createOffer().then((offer) => {
-      peer1.setLocalDescription(offer);
-      peer2.setRemoteDescription(offer);
-      peer2.createAnswer().then((answer) => {
-         peer2.setLocalDescription(answer);
-         peer1.setRemoteDescription(answer);
-      });
-   });
+   peer = peerConnection.createDataChannel("messaging-channel");
 }
 
 // Send a message to the peer
@@ -142,6 +184,7 @@ function switchToLoginView() {
    loginInput.value = "";
    logoutLabel.textContent = "";
    messageInput.value = "";
+   receiverInput.value = "";
    discussionInput.value = "";
 }
 
@@ -163,15 +206,33 @@ function onLoginClick() {
       type: "login",
       login: clientLogin
    });
+   setupPeerToPeer();
 }
 
 // Handler for logout click
 function onLogoutClick() {
-   clientLogin = "";
    sendToService({
-      type: "logout"
+      type: "logout",
+      login: clientLogin
    });
+   clientLogin = "";
    switchToLoginView();
+}
+
+// Handler for connect to
+function onConnectToClick() {
+   receiverLogin = receiverInput.value;
+   peerConnection.createOffer().then((offer) => {
+      peerConnection.setLocalDescription(offer);
+      sendToService({
+         type: "offer",
+         offer: offer,
+         from: clientLogin,
+         to: receiverLogin
+      });
+   }).catch((error) => {
+      console.error("Fail to create offer: " + error);
+   });
 }
 
 // Handler for send click

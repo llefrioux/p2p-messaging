@@ -22,87 +22,127 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *******************************************************************************/
 
-// Require websocket library 
+/*******************************************************************************
+                              GLOBAL VARIABLES
+ ******************************************************************************/
+
+// Require websocket library
 var WebSocket = require("ws");
 
 // P2P Messaging service port
 const PORT = process.env.PORT || 7777;
 
-// Creating a websocket server at port PORT 
-var service = new WebSocket.Server({ port: PORT }); 
-console.log("Service is ready on port: " + PORT);
+// Creating a websocket server at port PORT
+var service = new WebSocket.Server({ port: PORT });
+console.log(`service ready on port: ${PORT}`);
 
 // All client connected to the service
 var clients = {};
+
+/*******************************************************************************
+                           MESSAGING SERVICE
+ ******************************************************************************/
 
 // Handler for client connection
 service.on("connection", function(connection) {
    // Handler for receiving client message
    connection.on("message", function(message) {
-      // Try to parse the JSON command 
-      var command; 
+      // Try to parse the JSON command
+      var command;
       try {
-         command = JSON.parse(message); 
-      } catch (e) { 
-         console.log("Service received a malformed command.")
-         sendToClient(connection, { 
-            type: "error", 
+         command = JSON.parse(message);
+      } catch (e) {
+         console.log(`malformed: ${message}`);
+         sendToClient(connection, {
+            type: "error",
             message: "Malformed command: " + message
          });
          return;
       }
 
-      switch (command.type) { 
-            // Handle login message
-         case "login": 
-            if(clients[command.login]) { 
-               // The chosen login already exists then client is refused
-               console.log("Login refused: " + command.login);
-               sendToClient(connection, { 
-                  type: "login", 
-                  success: false,
-               }); 
-               return;
-            }
-            // Register new login client
-            console.log("New login: " + command.login);
-            clients[command.login] = connection; 
-            connection.login = command.login; 
-
-            sendToClient(connection, { 
-               type: "login", 
-               success: true,
-            }); 
+      switch (command.type) {
+         case "login":
+            onLoginReceived(connection, command);
             break;
 
-            // Handle logout message
+         // Handle peer-to-peer setup by transfering
+         case "ice-candidate":
+         case "offer":
+         case "answer":
+            onTransferReceived(command);
+            break;
+
          case "logout":
-            // Delete the client information
-            console.log("Client logout: " + connection.login);
-            delete clients[connection.login]; 
+            onLogoutReceived(command);
             break;
 
-            // Handle unknown type message
-         default: 
-            sendToClient(connection, { 
-               type: "error", 
-               message: "Unknown command: " + command.type 
-            }); 
+         default:
+            onUnknownReceived(command);
             break;
-      }  
+      }
    });
 
    // When a client closes the application
-   connection.on("close", function() { 
-      if(connection.login) {
-         // Delete the client information
-         console.log("Client left: " + connection.login);
-         delete clients[connection.login]; 
-      } 
+   connection.on("close", function() {
+      onConnectionClose(connection);
    });
 });
 
+// Hanlde login message
+function onLoginReceived(connection, command) {
+   // The chosen login already exists then client is refused
+   if(clients[command.login]) {
+      console.log(`refused login: ${command.login}`);
+      sendToClient(connection, {
+         type: "login",
+         success: false,
+      });
+      return;
+   }
+   // Register new login client
+   console.log(`login: ${command.login}`);
+   clients[command.login] = connection;
+   connection.login = command.login;
+   sendToClient(connection, {
+      type: "login",
+      success: true,
+   });
+}
+
+// Handle offer, answer and ice-candidate message
+function onTransferReceived(command) {
+   console.log(`${command.type}: from ${command.from} to ${command.to}`);
+   var otherConnection = clients[command.to];
+   if (otherConnection) {
+      sendToClient(otherConnection, command);
+   }
+}
+
+// Handle logout message
+function onLogoutReceived(command) {
+   // Delete the client information
+   console.log(`logout: ${command.login}`);
+   delete clients[command.login];
+}
+
+// Handle unknown message
+function onUnknownReceived(command) {
+   console.log(`unknown: ${command.type}`);
+   sendToClient(connection, {
+      type: "error",
+      message: "Unknown command: " + command.type
+   });
+}
+
+// Handle client connection close
+function onConnectionClose(connection) {
+   if(connection.login) { // Delete the client information it exists
+      console.log(`connection close: ${connection.login}`);
+      delete clients[connection.login];
+   }
+}
+
 // Use to send object as JSON string to client
-function sendToClient(connection, message) { 
-   connection.send(JSON.stringify(message)); 
+function sendToClient(connection, message) {
+   connection.send(JSON.stringify(message));
 }
