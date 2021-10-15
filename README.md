@@ -17,7 +17,7 @@ While openning the application a user can sign in with a login.
 
 When logged the user can logout and get back to previous sign in view.
 
-User can connect to another by typing the targeted user login and clicking on
+One can connect to another by typing the targeted user login and clicking on
 connect to. This will established a peer-to-peer connection using webRTC
 between the two users. This connection is settled via the service.
 
@@ -25,6 +25,10 @@ The user can then write messages and send them directly to the other through
 this connection by using the send button. When messages are received from the
 other user they are displayed in chronological order in the discussion
 textarea.
+
+It is possible to leave the conversation by clicking on the disconnect from
+button. From there the user can start again and again other conversations with
+the same user or with others.
 
 ## Service
 
@@ -72,6 +76,7 @@ Service accepts client connections and manages `login` and `logout` messages.
 ```
 {
    "type": "logout",
+   "login": string
 }
 ```
 
@@ -91,7 +96,9 @@ Service responds to clients with `login` and `error` messages.
    "type": "error",
    "message": string
 }
-``` 
+```
+
+Service transfers `logout` to the other peer if a connection is established.
 
 ### Establishing peer-to-peer communication
 

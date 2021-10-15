@@ -114,14 +114,21 @@ function onTransferReceived(command) {
    console.log(`${command.type}: from ${command.from} to ${command.to}`);
    var otherConnection = clients[command.to];
    if (otherConnection) {
+      clients[command.from].other = command.to;
       sendToClient(otherConnection, command);
    }
 }
 
 // Handle logout message
 function onLogoutReceived(command) {
-   // Delete the client information
    console.log(`logout: ${command.login}`);
+   var other = clients[command.login].other;
+   if (other) {
+      // Transfer information to the other
+      sendToClient(clients[other], command);
+      clients[other].other = "";
+   }
+   // Delete the client information
    delete clients[command.login];
 }
 
@@ -138,6 +145,16 @@ function onUnknownReceived(command) {
 function onConnectionClose(connection) {
    if(connection.login) { // Delete the client information it exists
       console.log(`connection closed: ${connection.login}`);
+      var other = clients[connection.login].other;
+      if (other) {
+         // Send logout to the other
+         sendToClient(clients[other], {
+            type: "logout",
+            login: connection.login
+         });
+         clients[other].other = "";
+      }
+      // Delete the client information
       delete clients[connection.login];
    }
 }

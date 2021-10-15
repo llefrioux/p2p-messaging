@@ -39,7 +39,7 @@ var peer;
 var clientLogin;
 
 // Receiver login
-var receiverLogin;
+var otherLogin;
 
 /*******************************************************************************
                            UI GLOBAL VARIABLES
@@ -49,7 +49,7 @@ var loginView = document.getElementById("loginView");
 var loginInput = document.getElementById("loginInput");
 var logoutLabel = document.getElementById("logoutLabel");
 var messageView = document.getElementById("messageView");
-var receiverInput = document.getElementById("receiverInput");
+var otherInput = document.getElementById("otherInput");
 var discussionInput = document.getElementById("discussionInput");
 var messageInput = document.getElementById("messageInput");
 
@@ -80,6 +80,10 @@ socket.onmessage = function (message) {
          onAnswerReceived(command);
          break;
 
+      case "logout":
+         onLogoutReceived();
+         break;
+
       case "error":
          onErrorReceived(command);
          break;
@@ -95,7 +99,7 @@ function onLoginReceived(command) {
       alert(`Sorry this login is already used: ${clientLogin}`);
       return;
    }
-   switchToMessageView(clientLogin);
+   switchToMessageView();
 }
 
 // Handle ice-candidate message
@@ -108,12 +112,12 @@ function onOfferReceived(command) {
    peerConnection.setRemoteDescription(command.offer);
    peerConnection.createAnswer().then((answer) => {
       peerConnection.setLocalDescription(answer);
-      receiverLogin = command.from;
+      otherLogin = command.from;
       sendToService({
          type: "answer",
          answer: answer,
          from: clientLogin,
-         to: receiverLogin
+         to: otherLogin
       });
    }).catch((error) => {
       console.error(`Fail to create answer: ${error}`);
@@ -126,6 +130,15 @@ function onAnswerReceived(command) {
       .catch((error) => {
          console.error(`Fail to handle answer: ${error}`);
       });
+}
+
+// Handle logout message
+function onLogoutReceived() {
+   otherLogin = "";
+   connectToButton.innerText = "Connect to";
+   closePeerToPeer();
+   setupPeerToPeer();
+   switchToMessageView();
 }
 
 // Handle error message
@@ -142,7 +155,7 @@ function sendToService(message) {
                          PEER-TO-PEER COMMUNICATION
  ******************************************************************************/
 
-// Setup a local peer-to-peer connection
+// Setup remote peer-to-peer connection
 function setupPeerToPeer() {
    var iceServer = {
       urls: "stun:stun.l.google.com:19302"
@@ -153,21 +166,32 @@ function setupPeerToPeer() {
          type: "ice-candidate",
          iceCandidate: event.candidate,
          from: clientLogin,
-         to: receiverLogin
+         to: otherLogin
       });
    };
    peerConnection.ondatachannel = function (event) {
       event.channel.onmessage = function (event) {
-         discussionInput.value += `${receiverLogin}: ${event.data}\n`;
+         discussionInput.value += `${otherLogin}: ${event.data}\n`;
       };
    };
 
    peer = peerConnection.createDataChannel("messaging-channel");
+   peer.onopen = function (event) {
+      connectToButton.innerText = "Disconnect from";
+   }
+}
+
+// close peer-to-peer connection
+function closePeerToPeer() {
+   peerConnection.close();
+   delete peerConnection;
+   peer.close();
+   delete peer;
 }
 
 // Send a message to the peer
 function sendToPeer(message) {
-   if (peer.readyState === "open") {
+   if (otherLogin !== "" && peer.readyState === "open") {
       peer.send(message);
       return true;
    }
@@ -186,17 +210,16 @@ function switchToLoginView() {
    loginView.style.display = "block";
    messageView.style.display = "none";
    loginInput.value = "";
-   logoutLabel.textContent = "";
-   receiverInput.value = "";
-   discussionInput.value = "";
-   messageInput.value = "";
 }
 
 // Switch to message view mode
-function switchToMessageView(login) {
+function switchToMessageView() {
    loginView.style.display = "none";
    messageView.style.display = "block";
-   logoutLabel.textContent = `Welcome ${login}!`;
+   logoutLabel.textContent = `Welcome ${clientLogin}!`;
+   otherInput.value = "";
+   discussionInput.value = "";
+   messageInput.value = "";
 }
 
 /*******************************************************************************
@@ -216,7 +239,7 @@ loginInput.addEventListener("keypress", function (event) {
       loginButton.click();
    }
 });
-receiverInput.addEventListener("keypress", function (event) {
+otherInput.addEventListener("keypress", function (event) {
    if (event.keyCode === 13) {
       event.preventDefault();
       connectToButton.click();
@@ -235,12 +258,15 @@ messageInput.addEventListener("keypress", function (event) {
 
 // Handler for login click
 function onLoginClick() {
+   if (loginInput.value === "") {
+      return;
+   }
    clientLogin = loginInput.value;
+   setupPeerToPeer();
    sendToService({
       type: "login",
       login: clientLogin
    });
-   setupPeerToPeer();
 }
 
 // Handler for logout click
@@ -250,28 +276,42 @@ function onLogoutClick() {
       login: clientLogin
    });
    clientLogin = "";
+   otherLogin = "";
+   connectToButton.innerText = "Connect to";
+   closePeerToPeer();
    switchToLoginView();
 }
 
 // Handler for connect to
 function onConnectToClick() {
-   receiverLogin = receiverInput.value;
+   if (connectToButton.innerText === "Disconnect from") {
+      return onDisconnectFromClick();
+   }
+   if (otherInput.value === "" || otherInput.value == clientLogin) {
+      return;
+   }
+   otherLogin = otherInput.value;
    peerConnection.createOffer().then((offer) => {
       peerConnection.setLocalDescription(offer);
       sendToService({
          type: "offer",
          offer: offer,
          from: clientLogin,
-         to: receiverLogin
+         to: otherLogin
       });
    }).catch((error) => {
       console.error(`Fail to create offer: ${error}`);
    });
 }
 
+// Handler for disconnect from
+function onDisconnectFromClick() {
+   onLogoutReceived();
+}
+
 // Handler for send click
 function onSendClick() {
-   if (sendToPeer(messageInput.value)) {
+   if (messageInput.value !== "" && sendToPeer(messageInput.value)) {
       discussionInput.value += `${clientLogin}: ${messageInput.value}\n`;
       messageInput.value = "";
    }
