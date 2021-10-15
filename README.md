@@ -103,7 +103,7 @@ Service transfers `logout` to the other peer if a connection is established.
 ### Establishing peer-to-peer communication
 
 Service is used as intermediate to established peer-to-peer connection between
-users. It acts as a signaling service and transfers `offer, `answer` and
+users. It acts as a signaling service and transfers `offer`, `answer` and
 `ice-candidate` messages from a user to another.
 
 `offer` messages are formed as follows:
