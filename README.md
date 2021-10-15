@@ -21,9 +21,10 @@ User can connect to another by typing the targeted user login and clicking on
 connect to. This will established a peer-to-peer connection using webRTC
 between the two users. This connection is settled via the service.
 
-The user can then write a message and send it directly to the other through
-this connection by using the send button. When the message is received from the
-other user it is displayed in the second textarea.
+The user can then write messages and send them directly to the other through
+this connection by using the send button. When messages are received from the
+other user they are displayed in chronological order in the discussion
+textarea.
 
 ## Service
 

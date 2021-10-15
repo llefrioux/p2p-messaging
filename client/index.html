@@ -33,21 +33,19 @@
       <h1>P2P Messaging</h1>
       <div id="loginView">
          <input type="email" placeholder="Enter a login" id="loginInput">
-         <button id="loginButton" onclick="onLoginClick();">Sign in</button>
+         <button id="loginButton">Sign in</button>
       </div>
       <div id="messageView">
          <label for="logoutButton" id="logoutLabel"></label>
-         <button id="logoutButton" onclick="onLogoutClick();">Sign out</button>
+         <button id="logoutButton">Sign out</button>
          <br/>
          <input type="email" placeholder="Enter a receiver" id="receiverInput">
-         <button id="connectToButton" onclick="onConnectToClick();">Connect to</button>
+         <button id="connectToButton">Connect to</button>
          </br>
-         <textarea cols="40" rows="5" placeholder="Enter a message" id="messageInput"></textarea>
-         <br/>
-         <button id="sendButton" onclick="onSendClick();">Send</button>
-         <br/>
          <textarea cols="40" rows="5" readonly="readonly" id="discussionInput"></textarea>
          <br/>
+         <input type="text" placeholder="Enter a message" id="messageInput">
+         <button id="sendButton">Send</button>
       </div>
    </body>
    <script type="text/javascript" src="client.js"></script>

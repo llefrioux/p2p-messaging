@@ -49,9 +49,9 @@ var loginView = document.getElementById("loginView");
 var loginInput = document.getElementById("loginInput");
 var logoutLabel = document.getElementById("logoutLabel");
 var messageView = document.getElementById("messageView");
-var messageInput = document.getElementById("messageInput");
 var receiverInput = document.getElementById("receiverInput");
 var discussionInput = document.getElementById("discussionInput");
+var messageInput = document.getElementById("messageInput");
 
 /*******************************************************************************
                            SERVICE COMMUNICATION
@@ -92,7 +92,7 @@ socket.onmessage = function (message) {
 // Handle login message
 function onLoginReceived(command) {
    if (command.success === false) {
-      alert("Sorry this login is already used...");
+      alert(`Sorry this login is already used: ${clientLogin}`);
       return;
    }
    switchToMessageView(clientLogin);
@@ -116,7 +116,7 @@ function onOfferReceived(command) {
          to: receiverLogin
       });
    }).catch((error) => {
-      console.error("Fail to create answer: " + error);
+      console.error(`Fail to create answer: ${error}`);
    });
 }
 
@@ -124,13 +124,13 @@ function onOfferReceived(command) {
 function onAnswerReceived(command) {
    peerConnection.setRemoteDescription(command.answer)
       .catch((error) => {
-         console.error("Fail to handle answer: " + error);
+         console.error(`Fail to handle answer: ${error}`);
       });
 }
 
 // Handle error message
 function onErrorReceived(command) {
-   console.error("Service replies with error: " + command.message);
+   console.error(`Service replies with error: ${command.message}`);
 }
 
 // Send a message to the service
@@ -158,7 +158,7 @@ function setupPeerToPeer() {
    };
    peerConnection.ondatachannel = function (event) {
       event.channel.onmessage = function (event) {
-         discussionInput.value = event.data;
+         discussionInput.value += `${receiverLogin}: ${event.data}\n`;
       };
    };
 
@@ -167,7 +167,11 @@ function setupPeerToPeer() {
 
 // Send a message to the peer
 function sendToPeer(message) {
-   peer.send(message);
+   if (peer.readyState === "open") {
+      peer.send(message);
+      return true;
+   }
+   return false;
 }
 
 /*******************************************************************************
@@ -183,17 +187,47 @@ function switchToLoginView() {
    messageView.style.display = "none";
    loginInput.value = "";
    logoutLabel.textContent = "";
-   messageInput.value = "";
    receiverInput.value = "";
    discussionInput.value = "";
+   messageInput.value = "";
 }
 
 // Switch to message view mode
 function switchToMessageView(login) {
    loginView.style.display = "none";
    messageView.style.display = "block";
-   logoutLabel.textContent = "Welcome " + login + "!";
+   logoutLabel.textContent = `Welcome ${login}!`;
 }
+
+/*******************************************************************************
+                           UI REGISTER CALLBACKS
+ ******************************************************************************/
+
+// Bind buttons to there handlers
+loginButton.addEventListener("click", onLoginClick);
+logoutButton.addEventListener("click", onLogoutClick);
+connectToButton.addEventListener("click", onConnectToClick);
+sendButton.addEventListener("click", onSendClick);
+
+// Bind some Enter press (key code: 13) on input to associated button click
+loginInput.addEventListener("keypress", function (event) {
+   if (event.keyCode === 13) {
+      event.preventDefault();
+      loginButton.click();
+   }
+});
+receiverInput.addEventListener("keypress", function (event) {
+   if (event.keyCode === 13) {
+      event.preventDefault();
+      connectToButton.click();
+   }
+});
+messageInput.addEventListener("keypress", function (event) {
+   if (event.keyCode === 13) {
+      event.preventDefault();
+      sendButton.click();
+   }
+});
 
 /*******************************************************************************
                                UI CALLBACKS
@@ -231,11 +265,14 @@ function onConnectToClick() {
          to: receiverLogin
       });
    }).catch((error) => {
-      console.error("Fail to create offer: " + error);
+      console.error(`Fail to create offer: ${error}`);
    });
 }
 
 // Handler for send click
 function onSendClick() {
-   sendToPeer(messageInput.value);
+   if (sendToPeer(messageInput.value)) {
+      discussionInput.value += `${clientLogin}: ${messageInput.value}\n`;
+      messageInput.value = "";
+   }
 }

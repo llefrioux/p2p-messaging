@@ -134,10 +134,10 @@ function onUnknownReceived(command) {
    });
 }
 
-// Handle client connection close
+// Handle client connection closed
 function onConnectionClose(connection) {
    if(connection.login) { // Delete the client information it exists
-      console.log(`connection close: ${connection.login}`);
+      console.log(`connection closed: ${connection.login}`);
       delete clients[connection.login];
    }
 }

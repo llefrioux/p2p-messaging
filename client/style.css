@@ -29,7 +29,12 @@ body {
     background-color: #e8e8e8; 
 }
 
-textarea {
+#discussionInput {
     min-width: 500px;
     min-height: 300px
+}
+
+#messageInput {
+    min-width: 500px;
+    min-height: 20px
 }
