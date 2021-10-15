@@ -20,21 +20,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*******************************************************************************/
+ ******************************************************************************/
 
 body {
-    max-width: 500px;
-    margin: auto;
-    text-align: center;
-    background-color: #e8e8e8; 
+   background-color: #e8e8e8;
+   margin: auto;
+   text-align: center;
+   width: 500px;
+}
+
+button {
+   background-color: #4caf50;
+   border: none;
+   color: white;
+   font-size: 15px;
+   margin: 5px;
+   padding: 5px 10px;
+   text-align: center;
+}
+
+input {
+   padding: 5px 10px;
+   margin: 5px;
+}
+
+textarea {
+   padding: 5px 10px;
+   margin: 5px;
 }
 
 #discussionInput {
-    min-width: 500px;
-    min-height: 300px
+   height: 300px;
+   width: 500px;
+}
+
+#messageDiv {
+   display: flex;
+   flex-direction: row;
+   width: 534px;
 }
 
 #messageInput {
-    min-width: 500px;
-    min-height: 20px
+   flex: 1;
 }
