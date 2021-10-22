@@ -41,6 +41,16 @@ var clientLogin;
 // Receiver login
 var otherLogin;
 
+// Message header types
+const Message = {
+   ANSWER: "answer",
+   ERROR: "error",
+   ICE_CANDITATE: "ice-candidate",
+   LOGIN: "login",
+   LOGOUT: "logout",
+   OFFER: "offer"
+}
+
 /*******************************************************************************
                            UI GLOBAL VARIABLES
  ******************************************************************************/
@@ -64,27 +74,27 @@ socket.onmessage = function (message) {
 
    // Call the correct handler depending on command type
    switch(command.type) {
-      case "login":
+      case Message.LOGIN:
          onLoginReceived(command);
          break;
 
-      case "ice-candidate":
+      case Message.ICE_CANDITATE:
          onIceCandidateReceived(command);
          break;
 
-      case "offer":
+      case Message.OFFER:
          onOfferReceived(command);
          break;
 
-      case "answer":
+      case Message.ANSWER:
          onAnswerReceived(command);
          break;
 
-      case "logout":
+      case Message.LOGIN:
          onLogoutReceived();
          break;
 
-      case "error":
+      case Message.ERROR:
          onErrorReceived(command);
          break;
 
@@ -114,7 +124,7 @@ function onOfferReceived(command) {
       peerConnection.setLocalDescription(answer);
       otherLogin = command.from;
       sendToService({
-         type: "answer",
+         type: Message.ANSWER,
          answer: answer,
          from: clientLogin,
          to: otherLogin
@@ -163,7 +173,7 @@ function setupPeerToPeer() {
    peerConnection = new RTCPeerConnection(iceServer);
    peerConnection.onicecandidate = function (event) {
       sendToService({
-         type: "ice-candidate",
+         type: Message.ICE_CANDITATE,
          iceCandidate: event.candidate,
          from: clientLogin,
          to: otherLogin
@@ -274,7 +284,7 @@ function onLoginClick() {
    clientLogin = loginInput.value;
    setupPeerToPeer();
    sendToService({
-      type: "login",
+      type: Message.LOGIN,
       login: clientLogin
    });
 }
@@ -286,7 +296,7 @@ function onLogoutClick() {
    closePeerToPeer();
    switchToLoginView();
    sendToService({
-      type: "logout",
+      type: Message.LOGOUT,
       login: clientLogin
    });
    clientLogin = "";
@@ -304,7 +314,7 @@ function onConnectToClick() {
    peerConnection.createOffer().then((offer) => {
       peerConnection.setLocalDescription(offer);
       sendToService({
-         type: "offer",
+         type: Message.OFFER,
          offer: offer,
          from: clientLogin,
          to: otherLogin
