@@ -39,6 +39,16 @@ console.log(`service ready on port: ${PORT}`);
 // All client connected to the service
 var clients = {};
 
+// Message header types
+const Message = {
+   ANSWER: "answer",
+   ERROR: "error",
+   ICE_CANDITATE: "ice-candidate",
+   LOGIN: "login",
+   LOGOUT: "logout",
+   OFFER: "offer"
+}
+
 /*******************************************************************************
                            MESSAGING SERVICE
  ******************************************************************************/
@@ -54,25 +64,25 @@ service.on("connection", function(connection) {
       } catch (e) {
          console.log(`malformed: ${message}`);
          sendToClient(connection, {
-            type: "error",
+            type: Message.ERROR,
             message: "Malformed command: " + message
          });
          return;
       }
 
       switch (command.type) {
-         case "login":
+         case Message.LOGIN:
             onLoginReceived(connection, command);
             break;
 
          // Handle peer-to-peer setup by transfering
-         case "ice-candidate":
-         case "offer":
-         case "answer":
+         case Message.ANSWER:
+         case Message.ICE_CANDITATE:
+         case Message.OFFER:
             onTransferReceived(command);
             break;
 
-         case "logout":
+         case Message.LOGOUT:
             onLogoutReceived(command);
             break;
 
@@ -94,7 +104,7 @@ function onLoginReceived(connection, command) {
    if(clients[command.login]) {
       console.log(`refused login: ${command.login}`);
       sendToClient(connection, {
-         type: "login",
+         type: Message.LOGIN,
          success: false,
       });
       return;
@@ -104,7 +114,7 @@ function onLoginReceived(connection, command) {
    clients[command.login] = connection;
    connection.login = command.login;
    sendToClient(connection, {
-      type: "login",
+      type: Message.LOGIN,
       success: true,
    });
 }
@@ -136,7 +146,7 @@ function onLogoutReceived(command) {
 function onUnknownReceived(command) {
    console.log(`unknown: ${command.type}`);
    sendToClient(connection, {
-      type: "error",
+      type: Message.ERROR,
       message: "Unknown command: " + command.type
    });
 }
@@ -149,7 +159,7 @@ function onConnectionClose(connection) {
       if (other) {
          // Send logout to the other
          sendToClient(clients[other], {
-            type: "logout",
+            type: Message.LOGOUT,
             login: connection.login
          });
          clients[other].other = "";
