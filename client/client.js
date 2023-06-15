@@ -110,7 +110,7 @@ function onLoginReceived(command) {
       alert(`Sorry this login is already used: ${clientLogin}`);
       return;
    }
-   switchToMessageView();
+   loadMessageView();
 }
 
 // Handle ice-candidate message
@@ -150,7 +150,7 @@ function onLogoutReceived() {
    otherInput.readOnly = false;
    closePeerToPeer();
    setupPeerToPeer();
-   switchToMessageView();
+   loadMessageView();
 }
 
 // Handle error message
@@ -194,7 +194,7 @@ function setupPeerToPeer() {
       otherInput.readOnly = true;
    }
    peer.onclose = function (event) {
-      switchToMessageView();
+      loadMessageView();
       setupPeerToPeer();
    }
 }
@@ -221,18 +221,18 @@ function sendToPeer(message) {
  ******************************************************************************/
 
 // Set login view mode when loading the page
-switchToLoginView();
+loadLoginView();
 
-// Switch to login view mode
-function switchToLoginView() {
+// Load login view mode
+function loadLoginView() {
    loginView.style.display = "block";
    messageView.style.display = "none";
    loginInput.value = "";
    logoutForm.style.display = "none";
 }
 
-// Switch to message view mode
-function switchToMessageView() {
+// Load message view mode
+function loadMessageView() {
    otherLogin = "";
    connectToButton.innerHTML = "<span class=\"bi-people-fill\"></span> Connect to";
    otherInput.readOnly = false;
@@ -295,7 +295,7 @@ function onLoginClick() {
 // Handler for logout click
 function onLogoutClick() {
    closePeerToPeer();
-   switchToLoginView();
+   loadLoginView();
    sendToService({
       type: Message.LOGOUT,
       login: clientLogin
