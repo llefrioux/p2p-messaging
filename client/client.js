@@ -91,10 +91,6 @@ socket.onmessage = function (message) {
          onAnswerReceived(command);
          break;
 
-      case Message.LOGIN:
-         onLogoutReceived();
-         break;
-
       case Message.ERROR:
          onErrorReceived(command);
          break;
@@ -141,16 +137,6 @@ function onAnswerReceived(command) {
       .catch((error) => {
          console.error(`Fail to handle answer: ${error}`);
       });
-}
-
-// Handle logout message
-function onLogoutReceived() {
-   otherLogin = "";
-   connectToButton.innerHTML = "<span class=\"bi-people-fill\"></span> Connect to";
-   otherInput.readOnly = false;
-   closePeerToPeer();
-   setupPeerToPeer();
-   loadMessageView();
 }
 
 // Handle error message
@@ -327,7 +313,9 @@ function onConnectToClick() {
 
 // Handler for disconnect from
 function onDisconnectFromClick() {
-   onLogoutReceived();
+   closePeerToPeer();
+   setupPeerToPeer();
+   loadMessageView();
 }
 
 // Handler for send click
