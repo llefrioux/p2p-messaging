@@ -57,10 +57,11 @@ const Message = {
 
 var loginView = document.getElementById("loginView");
 var loginInput = document.getElementById("loginInput");
+var logoutForm = document.getElementById("logoutForm");
 var logoutLabel = document.getElementById("logoutLabel");
 var messageView = document.getElementById("messageView");
 var otherInput = document.getElementById("otherInput");
-var discussionInput = document.getElementById("discussionInput");
+var discussionList = document.getElementById("discussionList");
 var messageInput = document.getElementById("messageInput");
 
 /*******************************************************************************
@@ -145,7 +146,8 @@ function onAnswerReceived(command) {
 // Handle logout message
 function onLogoutReceived() {
    otherLogin = "";
-   connectToButton.innerText = "Connect to";
+   connectToButton.innerHTML = "<span class=\"bi-people-fill\"></span> Connect to";
+   otherInput.readOnly = false;
    closePeerToPeer();
    setupPeerToPeer();
    switchToMessageView();
@@ -181,22 +183,18 @@ function setupPeerToPeer() {
    };
    peerConnection.ondatachannel = function (event) {
       event.channel.onmessage = function (event) {
-         discussionInput.value += `${otherLogin}: ${event.data}\n`;
+         discussionList.innerHTML += `<li class="list-group-item list-group-item-secondary rounded message received">${event.data}</li>`;
       };
    };
 
    peer = peerConnection.createDataChannel("messaging-channel");
    peer.onopen = function (event) {
-      connectToButton.innerText = "Disconnect from";
+      connectToButton.innerHTML = "<span class=\"bi-person-x-fill\"></span> Disconnect from";
       otherInput.value = otherLogin;
+      otherInput.readOnly = true;
    }
    peer.onclose = function (event) {
-      otherLogin = "";
-      connectToButton.innerText = "Connect to";
-      logoutLabel.textContent = `Welcome ${clientLogin}!`;
-      otherInput.value = "";
-      discussionInput.value = "";
-      messageInput.value = "";
+      switchToMessageView();
       setupPeerToPeer();
    }
 }
@@ -230,15 +228,20 @@ function switchToLoginView() {
    loginView.style.display = "block";
    messageView.style.display = "none";
    loginInput.value = "";
+   logoutForm.style.display = "none";
 }
 
 // Switch to message view mode
 function switchToMessageView() {
+   otherLogin = "";
+   connectToButton.innerHTML = "<span class=\"bi-people-fill\"></span> Connect to";
+   otherInput.readOnly = false;
    loginView.style.display = "none";
    messageView.style.display = "block";
    logoutLabel.textContent = `Welcome ${clientLogin}!`;
+   logoutForm.style.display = "block";
    otherInput.value = "";
-   discussionInput.value = "";
+   discussionList.innerHTML = "";
    messageInput.value = "";
 }
 
@@ -291,8 +294,6 @@ function onLoginClick() {
 
 // Handler for logout click
 function onLogoutClick() {
-   otherLogin = "";
-   connectToButton.innerText = "Connect to";
    closePeerToPeer();
    switchToLoginView();
    sendToService({
@@ -304,7 +305,7 @@ function onLogoutClick() {
 
 // Handler for connect to
 function onConnectToClick() {
-   if (connectToButton.innerText === "Disconnect from") {
+   if (connectToButton.innerText === " Disconnect from") {
       return onDisconnectFromClick();
    }
    if (otherInput.value === "" || otherInput.value == clientLogin) {
@@ -332,7 +333,7 @@ function onDisconnectFromClick() {
 // Handler for send click
 function onSendClick() {
    if (messageInput.value !== "" && sendToPeer(messageInput.value)) {
-      discussionInput.value += `${clientLogin}: ${messageInput.value}\n`;
+      discussionList.innerHTML += `<li class="list-group-item list-group-item-primary rounded message sent">${messageInput.value}</li>`;
       messageInput.value = "";
    }
 }

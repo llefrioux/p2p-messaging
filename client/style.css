@@ -22,44 +22,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  ******************************************************************************/
 
+html,
 body {
-   background-color: #e8e8e8;
-   margin: auto;
-   text-align: center;
-   width: 500px;
+  height: 100%;
 }
 
-button {
-   background-color: #4caf50;
-   border: none;
-   color: white;
-   font-size: 15px;
-   margin: 5px;
-   padding: 5px 10px;
-   text-align: center;
+.content {
+  max-width: 500px;
+  padding: 5px;
 }
 
-input {
-   padding: 5px 10px;
-   margin: 5px;
+.discussion-div {
+  max-width: 500px;
+  max-height: 500px;
+  min-height: 500px;
+  padding: 5px;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
-textarea {
-   padding: 5px 10px;
-   margin: 5px;
+.message {
+  padding: 5px;
+  margin: 1px;
+  max-width: 55%;
+  overflow-anchor: auto;
 }
 
-#discussionInput {
-   height: 300px;
-   width: 500px;
+.received {
+  float: left;
+  text-align: left;
+  margin-right: auto;
 }
 
-#messageDiv {
-   display: flex;
-   flex-direction: row;
-   width: 534px;
-}
-
-#messageInput {
-   flex: 1;
+.sent {
+  float: right;
+  text-align: right;
+  margin-left: auto;
 }

@@ -26,27 +26,41 @@
       OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
       USE OR OTHER DEALINGS IN THE SOFTWARE.
       ***********************************************************************-->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>P2P Messaging</title>
-      <link href="style.css" rel="stylesheet" type="text/css"/>
+      <link rel="shortcut icon" type="image/png" href="p2p_messaging.png"/>
+      <link href="style.css" rel="stylesheet" type="text/css">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
    <head/>
    <body>
-      <h1>P2P Messaging</h1>
-      <div id="loginView">
-         <input type="email" placeholder="Login" id="loginInput">
-         <button id="loginButton">Sign in</button>
+     <nav class="navbar bg-primary justify-content-between p-2">
+         <span class="navbar-brand h1 text-light"><img src="p2p_messaging.svg" width="30" height="30" class="d-inline-block align-top" alt=""> P2P Messaging</span>
+         <form class="form-inline" id="logoutForm">
+            <label class="form-label text-white" for="logoutButton" id="logoutLabel"></label>
+            <button class="btn btn-primary border" id="logoutButton"><span class="bi-box-arrow-in-left"></span> Sign out</button>
+         </form>
+      </nav>
+      <div id="loginView" class="content w-100 m-auto p-3">
+         <div class="input-group mb-3">
+            <input  type="email" class="form-control" id="loginInput" placeholder="Login">
+            <button class="btn btn-primary" id="loginButton"><span class="bi-box-arrow-in-right"></span> Join</button>
+         </div>
       </div>
-      <div id="messageView">
-         <label for="logoutButton" id="logoutLabel"></label>
-         <button id="logoutButton">Sign out</button>
-         <br/>
-         <input type="email" placeholder="Other login" id="otherInput">
-         <button id="connectToButton">Connect to</button>
-         </br>
-         <textarea cols="40" rows="5" readonly="readonly" id="discussionInput"></textarea>
-         <br/>
-         <div id=messageDiv>
-            <input type="text" placeholder="Message" id="messageInput">
-            <button id="sendButton">Send</button>
+      <div id="messageView" class="content w-100 m-auto p-3">
+         <div class="input-group mb-3">
+            <input type="email" class="form-control" placeholder="Other login" id="otherInput">
+            <button class="btn btn-primary" id="connectToButton"><span class="bi-people-fill"></span> Connect to</button>
+         </div>
+         <div class="discussion-div border rounded mb-3" id="discussionDiv">
+            <ul class="list-group list-group-flush" id="discussionList">
+            </ul>
+         </div>
+         <div class="input-group mb-3">
+             <input type="text" class="form-control" placeholder="Message" id="messageInput">
+             <button class="btn btn-primary btn-lg" id="sendButton">
+               <span class="bi-chat-right-text-fill"></span>
+             </button>
          </div>
       </div>
    </body>
