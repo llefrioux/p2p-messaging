@@ -223,7 +223,7 @@ function loadMessageView() {
    connectToButton.innerHTML = "<span class=\"bi-people-fill\"></span> Connect to";
    otherInput.readOnly = false;
    loginView.style.display = "none";
-   messageView.style.display = "block";
+   messageView.style.display = "flex";
    logoutLabel.textContent = `Welcome ${clientLogin}!`;
    logoutForm.style.display = "block";
    otherInput.value = "";
