@@ -1,24 +1,28 @@
 # P2P Messaging
 
-P2P Messaging is a peer-to-peer messaging application written in JavaScript.
+<img style="float: right" src="client/p2p_messaging.png" width="60"/>
+
+This project is a simple peer-to-peer (P2P) messaging application written in
+JavaScript.
 
 There are two pieces of software: a web client, and a Node.js service.
 
 ## Client
 
-The client is a web HTML page (index.html), with some JavaScript script
-(client.js), and stylesheet (style.css).
+The client is a responsive web HTML page build using Bootstrap. It also uses
+some JavaScript code to manage events and communication with the service and
+other peers.
 
-One can launch the client by opening the index.html page in a browser.
+A user can launch the client by opening the index.html page in a browser.
 
 Each client establishes a connection to the service using websocket.
 
-While openning the application a user can sign in with a login.
+While openning the application a user can join with a login.
 
-When logged the user can logout and get back to previous sign in view.
+When logged the user can sign out and get back to previous join in view.
 
-One can connect to another by typing the targeted user login and clicking on
-connect to. This will established a peer-to-peer connection using webRTC
+A user can connect to another by typing the targeted user login and clicking on
+connect to. This will established a P2P connection using WebRTC
 between the two users. This connection is settled via the service.
 
 The user can then write messages and send them directly to the other through
@@ -39,8 +43,8 @@ A client can try to sign in by proposing a login. The service accepts only if
 the login is not already used. A client can also logout. A map from login to
 client connection is maintained accordingly.
 
-The service is also used as intermediate for establishing peer-to-peer
-connection between clients.
+The service is also used as intermediate for establishing P2P connection
+between clients.
 
 ### Get started
 
@@ -56,11 +60,12 @@ Then, you can run the service:
 ```bash
 node service.js
 ```
-Note: Service is configured to run by default on port 7777, but you can change
-it by setting the environment variable `PORT`. If you do so, do not forget to
-change port also in the client code.
 
-### Sign in and sign out
+Note: The service is configured to run by default on port 7777, but you can
+change it by setting the environment variable `PORT`. If you do so, do not
+forget to change port also in the client code.
+
+### Join in and sign out
 
 Service accepts client connections and manages `login` and `logout` messages.
 
@@ -98,12 +103,10 @@ Service responds to clients with `login` and `error` messages.
 }
 ```
 
-Service transfers `logout` to the other peer if a connection is established.
+### Establishing P2P communication
 
-### Establishing peer-to-peer communication
-
-Service is used as intermediate to established peer-to-peer connection between
-users. It acts as a signaling service and transfers `offer`, `answer` and
+Service is used as intermediate to established P2P connection between users.
+It acts as a signaling service and transfers `offer`, `answer` and
 `ice-candidate` messages from a user to another.
 
 `offer` messages are formed as follows:
